@@ -57,7 +57,7 @@ async def lag(ctx):
     
     
 @client.command()
-async def isA(ctx):
+async def BombisA(ctx):
     await ctx.send('*Dies at B*')
     
 @client.command(aliases =  ['KYs','kys','Kys','KyS'])
