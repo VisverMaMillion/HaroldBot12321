@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.utils import get
 import youtube_dl
 import random as rd
-
+token = str(input('Koodi: '))
 
 client = commands.Bot(command_prefix = '.')
 
