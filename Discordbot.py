@@ -77,7 +77,7 @@ async def play(ctx, url: str):
     voice.source.value = 0.07
     
     nname = name.rsplit("-", 2)
-    await ctx.send(f'PLaying: {nname[0]}')
+    await ctx.send(f'Playing: {nname[0]}')
     print('Playing your song')
 
 @bot.command()
