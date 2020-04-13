@@ -4,7 +4,7 @@ from discord.utils import get
 import youtube_dl
 import random as rd
 
-
+token = str(input('Koodi: '))
 client = commands.Bot(command_prefix = '.')
 
 @client.event
@@ -77,6 +77,6 @@ async def die(ctx):
     
     
     
-client.run('Njk5MjE0ODgzMDQzOTM0Mjcw.XpRJyQ.sc6BwKjQIB6hARaAIipP-2QVAxA')
+client.run(token)
 
 
