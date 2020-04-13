@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.utils import get
 import youtube_dl
 import random as rd
-token = str(input('Koodi: '))
+
 
 client = commands.Bot(command_prefix = '.')
 
@@ -20,6 +20,7 @@ async def backup(ctx):
         await voice.move_to(channel)
     else:
         voice = await channel.connect()
+        await ctx.send(f'Need backup in %s' %(channel))
     
 @client.command(pass_context=True)
 async def noob(ctx):
@@ -76,6 +77,6 @@ async def die(ctx):
     
     
     
-client.run(token)
+client.run('Njk5MjE0ODgzMDQzOTM0Mjcw.XpRJyQ.sc6BwKjQIB6hARaAIipP-2QVAxA')
 
 
