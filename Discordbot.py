@@ -76,6 +76,6 @@ async def die(ctx):
     
     
     
-client.run('Njk5MjE0ODgzMDQzOTM0Mjcw.XpRJyQ.sc6BwKjQIB6hARaAIipP-2QVAxA')
+client.run(token)
 
 
