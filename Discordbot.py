@@ -79,7 +79,15 @@ async def play(ctx, url: str):
     nname = name.rsplit("-", 2)
     await ctx.send(f'PLaying: {nname[0]}')
     print('Playing your song')
-    
+
+@bot.command()
+async def delsong(ctx):
+    song_there = os.path.isfile("song.mp3")
+    if song_there:
+        os.remove("song.mp3")
+        print('Removed old song')
+    else:
+        return
 
 @bot.command()
 async def lag(ctx):
