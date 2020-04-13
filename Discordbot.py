@@ -57,7 +57,7 @@ async def play(ctx, url: str):
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
-            'prefferredcodec': 'mp3',
+            'preferredcodec': 'mp3',
             'preferredquality': '192',  
             }],
         }
