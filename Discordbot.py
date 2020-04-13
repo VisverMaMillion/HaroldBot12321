@@ -3,9 +3,15 @@ from discord.ext import commands
 from discord.utils import get
 import youtube_dl
 import random as rd
+import numpy as np
 import os
 
-token = str(input('Koodi: '))
+token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype= str)
+
+
+
+
+#token = str(input('Koodi: '))
 
 bot = commands.Bot(command_prefix = '.')
 
@@ -15,7 +21,6 @@ async def on_ready():
 
 @bot.command(pass_context=True)
 async def backup(ctx):
-    global voice
     channel = ctx.message.author.voice.channel
     voice = get(bot.voice_clients, guild=ctx.guild)
     if voice and voice.is_connected():
@@ -38,6 +43,15 @@ async def noob(ctx):
         
 @bot.command(pass_context=True, aliases=['p'])
 async def play(ctx, url: str):
+    channel = ctx.message.author.voice.channel
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    if voice and voice.is_connected():
+        await voice.move_to(channel)
+    else:
+        voice = await channel.connect()
+        print('Need backup in %s' %(channel))
+        await ctx.send(f'Need backup in %s!' %(channel))
+    
     song_there = os.path.isfile("song.mp3")
     try:
         if song_there:
@@ -49,8 +63,6 @@ async def play(ctx, url: str):
         return
     
     await ctx.send("Trying to play your song")
-    
-    voice = get(bot.voice_clients, guild=ctx.guild)
     
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -164,6 +176,7 @@ async def die(ctx):
     
    
     
-bot.run(token)
+bot.run(str(token))
+
 
 
