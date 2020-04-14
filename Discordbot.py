@@ -158,7 +158,7 @@ async def dropplz(ctx):
 exitlist = ["AAAARGH!", "Said no and left.", "Harold fell off the map.", "Harold fucking died.",
             "Harold abandoned the match and received a 7 day competitive matchmaking cooldown."]
 
-deathlist = ["death1", "death2", "death3", "headshot", "olkapää", "aisaatana"]
+deathlist = ["death1", "death2", "death3", "headshot", "olkapaa", "aisaatana"]
 
 @bot.command(aliases =  ['KYs','kys','Kys','KyS', "kYS"])
 async def KYS(ctx):
