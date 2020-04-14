@@ -163,7 +163,7 @@ exitlist = ["AAAARGH!", "Said no and left.", "Harold fell off the map.", "Harold
 @bot.command(aliases =  ['KYs','kys','Kys','KyS'])
 async def KYS(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
-    await ctx.send(exitlist[round(rd.random()*4)])
+    await ctx.send(rd.choice(exitlist))
     if voice and voice.is_connected():
         await voice.disconnect()
         exit()
