@@ -5,6 +5,7 @@ import youtube_dl
 import random as rd
 import numpy as np
 import os
+import time
 
 token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype= str)
 workdir = os.path.dirname(__file__)
@@ -135,6 +136,7 @@ async def stop(ctx):
     else:
         await ctx.send('But sir please!')
         queclr(songdir, 0)
+    return
 
     
 @bot.command()
@@ -153,17 +155,29 @@ async def BombisA(ctx):
 async def dropplz(ctx):
     await ctx.send('But sir please!')
     
-exitlist = ["AAAARGH!", "Said no and left.", "Harold fell off the map.", "Harold fucking died oh god oh fuck",
+exitlist = ["AAAARGH!", "Said no and left.", "Harold fell off the map.", "Harold fucking died.",
             "Harold abandoned the match and received a 7 day competitive matchmaking cooldown."]
-    
-@bot.command(aliases =  ['KYs','kys','Kys','KyS'])
+
+deathlist = ["death1", "death2", "death3", "headshot", "olkapää", "aisaatana"]
+
+@bot.command(aliases =  ['KYs','kys','Kys','KyS', "kYS"])
 async def KYS(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
-    await ctx.send(rd.choice(exitlist))
+    try:
+        voice.stop()
+    except AttributeError:
+        pass
     if voice and voice.is_connected():
+        deathdir = os.path.join(workdir, f'sfx/deathsounds/{rd.choice(deathlist)}.mp3')
+        voice.play(discord.FFmpegPCMAudio(deathdir))
+        voice.source = discord.PCMVolumeTransformer(voice.source)
+        voice.source.value = 0.4
+        time.sleep(2)
         await voice.disconnect()
+        await ctx.send(rd.choice(exitlist))
         exit()
     else:
+        await ctx.send(rd.choice(exitlist))
         exit()
         
 @bot.command()
@@ -172,5 +186,3 @@ async def die(ctx):
     
 
 bot.run(str(token))
-
-
