@@ -22,6 +22,7 @@ def queclr(x , y ):
 
 @bot.event
 async def on_ready():
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game("Hiding on de_dust2"))
     print('Need backup!')    
 
 @bot.command(pass_context=True)
