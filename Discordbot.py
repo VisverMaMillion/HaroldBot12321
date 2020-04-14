@@ -8,11 +8,6 @@ import os
 
 token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype= str)
 
-
-
-
-#token = str(input('Koodi: '))
-
 bot = commands.Bot(command_prefix = '.')
 
 @bot.event
@@ -52,6 +47,9 @@ async def play(ctx, url: str):
         print('Need backup in %s' %(channel))
         await ctx.send(f'Need backup in %s!' %(channel))
     
+    
+    workdir = os.path.dirname(__file__)
+    songdir = os.path.join(workdir,'songs/%(title)s.%(ext)s')
     song_there = os.path.isfile("song.mp3")
     try:
         if song_there:
@@ -69,8 +67,9 @@ async def play(ctx, url: str):
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',  
+            'preferredquality': '192', 
             }],
+        'outtmpl': songdir
         }
     
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -117,24 +116,19 @@ async def resume(ctx):
     else:
         await ctx.send('But sir please!')
         
-@bot.command(pass_context=True, aliases=['s'])
+@bot.command(pass_context=True, aliases=['s'])  #muokkaa poistamaan que
 async def stop(ctx):
-    
     voice = get(bot.voice_clients, guild=ctx.guild)
     
     if voice and voice.is_playing():
         print('Music stopped')
         voice.stop()
+        os.remove("song.mp3")
         await ctx.send('Halted thine noises, sire!')
     else:
         await ctx.send('But sir please!')
         
-    song_there = os.path.isfile("song.mp3") # KORJAA TÄMÄ!
-    if song_there:
-        os.remove("song.mp3")
-        print('Removed old song')
-    else:
-        return
+
     
 @bot.command()
 async def delsong(ctx):
@@ -174,9 +168,7 @@ async def KYS(ctx):
 async def die(ctx):
     exit()
     
-   
-    
-bot.run(str(token))
 
+bot.run(str(token))
 
 
