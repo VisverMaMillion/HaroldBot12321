@@ -7,8 +7,18 @@ import numpy as np
 import os
 
 token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype= str)
-
+workdir = os.path.dirname(__file__)
+songdir = os.path.join(workdir,'songs')
 bot = commands.Bot(command_prefix = '.')
+
+def queclr(x , y ):
+    folder = x
+    if y == 0:
+        for song in os.listdir(folder):
+            filepath = os.path.join(x, song)
+            os.unlink(filepath)
+    else:
+        pass
 
 @bot.event
 async def on_ready():
@@ -48,17 +58,17 @@ async def play(ctx, url: str):
         await ctx.send(f'Need backup in %s!' %(channel))
     
     
-    workdir = os.path.dirname(__file__)
-    songdir = os.path.join(workdir,'songs/%(title)s.%(ext)s')
-    song_there = os.path.isfile("song.mp3")
-    try:
-        if song_there:
-            os.remove("song.mp3")
-            print('Removed old song')
-    except PermissionError:
-        print('Trying to delete song but it is being played')
-        await ctx.send('Cannot remove song that is being played')
-        return
+
+    songdowndir = os.path.join(workdir,'songs/%(title)s.%(ext)s')
+#    song_there = os.path.isfile("song.mp3")
+#    try:
+#        if song_there:
+#            os.remove("song.mp3")
+#            print('Removed old song')
+#    except PermissionError:
+#        print('Trying to delete song but it is being played')
+#        await ctx.send('Cannot remove song that is being played')
+#        return
     
     await ctx.send("Trying to play your song")
     
@@ -69,25 +79,21 @@ async def play(ctx, url: str):
             'preferredcodec': 'mp3',
             'preferredquality': '192', 
             }],
-        'outtmpl': songdir
+        'outtmpl': songdowndir
         }
     
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         print('Downloading song\n')
         ydl.download([url])
+        info_dict = ydl.extract_info(url, download=False)
+        title = info_dict.get('title', None)
         
-    for file in os.listdir("./"):
-        if file.endswith(".mp3"):
-            name = file
-            print(f'Renamed file: {file}\n')
-            os.rename(file, "song.mp3")
-    
-    voice.play(discord.FFmpegPCMAudio("song.mp3"), after=lambda e: print(f'{name} has finished playing'))
+    songpath = os.path.join(workdir, f'songs/{title}.mp3')
+    voice.play(discord.FFmpegPCMAudio(songpath))
     voice.source = discord.PCMVolumeTransformer(voice.source)
     voice.source.value = 0.07
     
-    nname = name.rsplit("-", 2)
-    await ctx.send(f'Playing: {nname[0]}')
+    await ctx.send(f'Playing: {title}')
     print('Playing your song')
 
 
@@ -123,21 +129,16 @@ async def stop(ctx):
     if voice and voice.is_playing():
         print('Music stopped')
         voice.stop()
-        os.remove("song.mp3")
+        queclr(songdir, 0)
         await ctx.send('Halted thine noises, sire!')
     else:
         await ctx.send('But sir please!')
-        
+        queclr(songdir, 0)
 
     
 @bot.command()
 async def delsong(ctx):
-    song_there = os.path.isfile("song.mp3")
-    if song_there:
-        os.remove("song.mp3")
-        print('Removed old song')
-    else:
-        return
+    queclr(songdir, 0)
     
 @bot.command()
 async def lag(ctx):
