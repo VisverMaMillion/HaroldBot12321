@@ -15,12 +15,19 @@ queue = np.array([])
 length = np.array([])
 urlque = np.array([])
 
-def queclr(x , y ):
-    folder = x
+def queclr(y):
+    global queue
     if y == 0:
-        for song in os.listdir(folder):
-            filepath = os.path.join(x, song)
+        for song in os.listdir(songdir):
+            filepath = os.path.join(songdir, song)
             os.unlink(filepath)
+    elif y == 1:   
+        filepath = os.path.join(songdir,queue[0] +'.mp3')
+        queue = np.delete(queue,0)
+        os.unlink(filepath)
+        print(filepath)
+        
+        
     
  
 
@@ -63,6 +70,7 @@ async def play(ctx, url: str):
         
     def urlfromque():
         global urlque
+        queclr(1)
         try:
             se = urlque[0]
             return se
@@ -99,6 +107,7 @@ async def play(ctx, url: str):
         length = np.append(length,lengthval)
         try:
             urlque = np.delete(urlque,0)
+            print(urlque)
         except IndexError:
             pass
 
@@ -113,7 +122,6 @@ async def play(ctx, url: str):
             if voice.is_playing() == False:
                 songdload(url)
                 songpath = os.path.join(workdir, f'songs/{queue[0]}.mp3')
-                queue = np.delete(queue,0)
                 voice.play(discord.FFmpegPCMAudio(songpath), after=lambda e: checkque(urlfromque()))
                 voice.source = discord.PCMVolumeTransformer(voice.source)
                 voice.source.value = 0.07
@@ -203,7 +211,7 @@ async def stop(ctx):
     
 @bot.command()
 async def delsong(ctx):
-    queclr(songdir, 0)
+    queclr(0)
     
 @bot.command()
 async def lag(ctx):
