@@ -11,6 +11,9 @@ token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype= str)
 workdir = os.path.dirname(__file__)
 songdir = os.path.join(workdir,'songs')
 bot = commands.Bot(command_prefix = '.')
+queue = np.array([])
+length = np.array([])
+urlque = np.array([])
 
 def queclr(x , y ):
     folder = x
@@ -18,8 +21,8 @@ def queclr(x , y ):
         for song in os.listdir(folder):
             filepath = os.path.join(x, song)
             os.unlink(filepath)
-    else:
-        pass
+    
+ 
 
 @bot.event
 async def on_ready():
@@ -50,31 +53,30 @@ async def noob(ctx):
         
 @bot.command(pass_context=True, aliases=['p'])
 async def play(ctx, url: str):
+    
     channel = ctx.message.author.voice.channel
     voice = get(bot.voice_clients, guild=ctx.guild)
-    if voice and voice.is_connected():
-        await voice.move_to(channel)
-    else:
-        voice = await channel.connect()
-        print('Need backup in %s' %(channel))
-        await ctx.send(f'Need backup in %s!' %(channel))
     
-    
+    def urltoque(url):
+        global urlque
+        urlque = np.append(urlque,url)
+        
+    def urlfromque():
+        global urlque
+        try:
+            se = urlque[0]
+            return se
+        except IndexError:
+            return None
 
-    songdowndir = os.path.join(workdir,'songs/%(title)s.%(ext)s')
-#    song_there = os.path.isfile("song.mp3")
-#    try:
-#        if song_there:
-#            os.remove("song.mp3")
-#            print('Removed old song')
-#    except PermissionError:
-#        print('Trying to delete song but it is being played')
-#        await ctx.send('Cannot remove song that is being played')
-#        return
-    
-    await ctx.send("Trying to play your song")
-    
-    ydl_opts = {
+
+        
+    def songdload(url):
+        global queue
+        global length
+        global urlque
+        songdowndir = os.path.join(workdir,'songs/%(title)s.%(ext)s')
+        ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -84,19 +86,77 @@ async def play(ctx, url: str):
         'outtmpl': songdowndir
         }
     
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        print('Downloading song\n')
-        ydl.download([url])
-        info_dict = ydl.extract_info(url, download=False)
-        title = info_dict.get('title', None)
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            print('Downloading song\n')
+            ydl.download([url])
+            info_dict = ydl.extract_info(url, download=False)
+            title = info_dict.get('title', None)
+            lengthval = info_dict.get('duration', None)
+            if title.count(':') >= 1:
+                title = title.replace(':', ' -')
+        ntitle = np.array([title])
+        queue = np.append(queue,ntitle)
+        length = np.append(length,lengthval)
+        try:
+            urlque = np.delete(urlque,0)
+        except IndexError:
+            pass
+
         
-    songpath = os.path.join(workdir, f'songs/{title}.mp3')
-    voice.play(discord.FFmpegPCMAudio(songpath))
-    voice.source = discord.PCMVolumeTransformer(voice.source)
-    voice.source.value = 0.07
+        
+    def checkque(url):
+        global urlque
+        global queue
+        if url == None:
+            return
+        else:
+            if voice.is_playing() == False:
+                songdload(url)
+                songpath = os.path.join(workdir, f'songs/{queue[0]}.mp3')
+                queue = np.delete(queue,0)
+                voice.play(discord.FFmpegPCMAudio(songpath), after=lambda e: checkque(urlfromque()))
+                voice.source = discord.PCMVolumeTransformer(voice.source)
+                voice.source.value = 0.07
+            
+            else:
+                urltoque(url)        
+
+        
+    if voice and voice.is_connected():
+        await voice.move_to(channel)
+    else:
+        voice = await channel.connect()
+        print('Need backup in %s' %(channel))
+        await ctx.send(f'Need backup in %s!' %(channel))
     
-    await ctx.send(f'Playing: {title}')
-    print('Playing your song')
+    
+
+    
+#    song_there = os.path.isfile("song.mp3")
+#    try:
+#        if song_there:
+#            os.remove("song.mp3")
+#            print('Removed old song')
+#    except PermissionError:
+#        print('Trying to delete song but it is being played')
+#        await ctx.send('Cannot remove song that is being played')
+#        return
+    checkque(url)
+    
+#    await ctx.send("Trying to play your song")
+    
+    
+    print('Playing your song', urlque)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
 
 
 @bot.command(pass_context=True, aliases=['pau'])
@@ -130,7 +190,9 @@ async def stop(ctx):
     
     if voice and voice.is_playing():
         print('Music stopped')
+        urlque = np.array([])
         voice.stop()
+        time.sleep(2)
         queclr(songdir, 0)
         await ctx.send('Halted thine noises, sire!')
     else:
