@@ -1,3 +1,4 @@
+######################Imports#################################################
 import discord 
 from discord.ext import commands 
 from discord.utils import get
@@ -6,37 +7,53 @@ import random as rd
 import numpy as np
 import os
 import time
-
+#######################Globalvariables########################################
 token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype= str)
 workdir = os.path.dirname(__file__)
 songdir = os.path.join(workdir,'songs')
+playlistdir = os.path.join(workdir, 'playlists')
 bot = commands.Bot(command_prefix = '.')
 queue = np.array([])
 length = np.array([])
 urlque = np.array([])
+##############################################################################
 
-def queclr(y):
+def queclr(y, x): #works
     global queue
+    global urlque
     if y == 0:
-        for song in os.listdir(songdir):
-            filepath = os.path.join(songdir, song)
+        try:
+            for song in os.listdir(songdir):
+                filepath = os.path.join(songdir, song)
+                os.unlink(filepath)
+        except:
+            pass
+    elif y == 1:
+        try:
+            filepath = os.path.join(songdir,queue[0] +'.mp3')
+            queue = np.delete(queue,0)
+            urlque = np.delete(urlque, 0)
             os.unlink(filepath)
-    elif y == 1:   
-        filepath = os.path.join(songdir,queue[0] +'.mp3')
-        queue = np.delete(queue,0)
-        os.unlink(filepath)
-        print(filepath)
+        except IndexError:
+            pass
+        
+    elif y == 2:
+        try:
+            urlque = np.delete(urlque, x)
+        except IndexError:
+            pass
+        
         
         
     
  
 
 @bot.event
-async def on_ready():
+async def on_ready(): #works
     await bot.change_presence(status=discord.Status.online, activity=discord.Game("Hiding on de_dust2"))
     print('Need backup!')    
 
-@bot.command(pass_context=True)
+@bot.command(pass_context=True) #works
 async def backup(ctx):
     channel = ctx.message.author.voice.channel
     voice = get(bot.voice_clients, guild=ctx.guild)
@@ -47,16 +64,16 @@ async def backup(ctx):
         print('Need backup in %s' %(channel))
         await ctx.send(f'Need backup in %s!' %(channel))
                
-@bot.command(pass_context=True, aliases=['enemysighted', 'es'])
-async def noob(ctx):
-    channel = ctx.message.author.voice.channel
-    voice = get(bot.voice_clients, guild=ctx.guild)
-    if voice and voice.is_connected():
-        await voice.disconnect()
-        print(f"Left {channel}")
-        await ctx.send(f"Left {channel}")
-    else:
-        return
+#@bot.command(pass_context=True, aliases=['enemysighted', 'es'])
+#async def noob(ctx):
+#    channel = ctx.message.author.voice.channel
+#    voice = get(bot.voice_clients, guild=ctx.guild)
+#    if voice and voice.is_connected():
+#        await voice.disconnect()
+#        print(f"Left {channel}")
+#        await ctx.send(f"Left {channel}")
+#    else:
+#        return
         
 @bot.command(pass_context=True, aliases=['p'])
 async def play(ctx, url: str):
@@ -64,22 +81,24 @@ async def play(ctx, url: str):
     channel = ctx.message.author.voice.channel
     voice = get(bot.voice_clients, guild=ctx.guild)
     
-    def urltoque(url):
+    def urltoque(url):  #works
         global urlque
-        urlque = np.append(urlque,url)
+        urlque = np.append(urlque,url) 
         
-    def urlfromque():
+    def urlfromque():   #works
         global urlque
-        queclr(1)
+        queclr(1,1)
         try:
             se = urlque[0]
+            urlque = np.delete(urlque,0)
+            print(urlque)
             return se
         except IndexError:
             return None
 
 
         
-    def songdload(url):
+    def songdload(url): #works , lisää search, mieti saako queen nimet
         global queue
         global length
         global urlque
@@ -99,21 +118,14 @@ async def play(ctx, url: str):
             ydl.download([url])
             info_dict = ydl.extract_info(url, download=False)
             title = info_dict.get('title', None)
-            lengthval = info_dict.get('duration', None)
+            lengthval = info_dict.get('duration', None) #turha?
             if title.count(':') >= 1:
                 title = title.replace(':', ' -')
         ntitle = np.array([title])
         queue = np.append(queue,ntitle)
         length = np.append(length,lengthval)
-        try:
-            urlque = np.delete(urlque,0)
-            print(urlque)
-        except IndexError:
-            pass
-
         
-        
-    def checkque(url):
+    def checkque(url): #it just works
         global urlque
         global queue
         if url == None:
@@ -127,51 +139,55 @@ async def play(ctx, url: str):
                 voice.source.value = 0.07
             
             else:
-                urltoque(url)        
+               pass      
 
         
     if voice and voice.is_connected():
         await voice.move_to(channel)
     else:
         voice = await channel.connect()
-        print('Need backup in %s' %(channel))
         await ctx.send(f'Need backup in %s!' %(channel))
     
-    
-
-    
-#    song_there = os.path.isfile("song.mp3")
-#    try:
-#        if song_there:
-#            os.remove("song.mp3")
-#            print('Removed old song')
-#    except PermissionError:
-#        print('Trying to delete song but it is being played')
-#        await ctx.send('Cannot remove song that is being played')
-#        return
+    urltoque(url)  
     checkque(url)
+
+
     
-#    await ctx.send("Trying to play your song")
+@bot.command(pass_context=True, aliases=['sk','next']) #works
+async def skip(ctx):
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    if voice.is_playing():
+        voice.stop()
+    else:
+        pass
     
     
-    print('Playing your song', urlque)
-        
-        
-        
-        
-        
-        
-        
-        
-        
+@bot.command(pass_context = True, aliases = ['rmfq']) #works
+async def removefromque(ctx, x):
+    queclr(2,int(x))
+    
+    
+    
+
+@bot.command(pass_context=True, aliases=['savepl','spl']) #works
+async def saveplaylist(ctx,nimi: str):
+    np.save(playlistdir +f'/{nimi}.npy', urlque)
+
+
+@bot.command(pass_context=True, aliases=['pl','loadpl']) #works
+async def loadplaylist(ctx, nimi: str):
+    global urlque
+    urlque = np.load(playlistdir +f'/{nimi}.npy')
+    print(urlque)
+    await play(ctx, urlque[0])
 
 
 
-@bot.command(pass_context=True, aliases=['pau'])
+
+@bot.command(pass_context=True, aliases=['pau']) #works
 async def pause(ctx):
     
     voice = get(bot.voice_clients, guild=ctx.guild)
-    
     if voice and voice.is_playing():
         print('Music paused')
         voice.pause()
@@ -180,7 +196,7 @@ async def pause(ctx):
         print('Music not playing')
         await ctx.send('Negative! No music playing, sir!')
 
-@bot.command(pass_context=True, aliases=['r', 'res'])
+@bot.command(pass_context=True, aliases=['r', 'res']) #works
 async def resume(ctx):
     
     voice = get(bot.voice_clients, guild=ctx.guild)
@@ -192,37 +208,38 @@ async def resume(ctx):
     else:
         await ctx.send('But sir please!')
         
-@bot.command(pass_context=True, aliases=['s'])  #muokkaa poistamaan que
+@bot.command(pass_context=True, aliases=['s']) #works
 async def stop(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
+    global urlque
     
     if voice and voice.is_playing():
         print('Music stopped')
         urlque = np.array([])
         voice.stop()
         time.sleep(2)
-        queclr(songdir, 0)
+        queclr(0,1)
         await ctx.send('Halted thine noises, sire!')
+        await voice.disconnect()
     else:
         await ctx.send('But sir please!')
-        queclr(songdir, 0)
     return
 
     
-@bot.command()
-async def delsong(ctx):
-    queclr(0)
+@bot.command()                  #works
+async def delsong():
+    queclr(0,1)
     
-@bot.command()
+@bot.command(aliases = ['ping']) #works
 async def lag(ctx):
     await ctx.send(f'{round(bot.latency * 100)} ms ')
         
-@bot.command()
+@bot.command()      #works
 async def BombisA(ctx):
     await ctx.send('Getting pounded over here!')
     
-@bot.command(aliases = ['drop', 'pls', 'droplz'])
-async def dropplz(ctx):
+@bot.command(aliases = ['drop', 'pls', 'droplz'])       #works
+async def dropplz(ctx):     
     await ctx.send('But sir please!')
     
 exitlist = ["AAAARGH!", "Said no and left.", "Harold fell off the map.", "Harold fucking died.",
@@ -230,10 +247,12 @@ exitlist = ["AAAARGH!", "Said no and left.", "Harold fell off the map.", "Harold
 
 deathlist = ["death1", "death2", "death3", "headshot", "olkapaa", "aisaatana"]
 
-@bot.command(aliases =  ['KYs','kys','Kys','KyS', "kYS"])
+@bot.command(aliases =  ['KYs','kys','Kys','KyS', "kYS"]) #works mutta optimoi
 async def KYS(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
+    global urlque
     try:
+        urlque = np.array([])
         voice.stop()
     except AttributeError:
         pass
@@ -245,12 +264,14 @@ async def KYS(ctx):
         time.sleep(2)
         await voice.disconnect()
         await ctx.send(rd.choice(exitlist))
+        delsong()
         exit()
     else:
         await ctx.send(rd.choice(exitlist))
+        delsong()
         exit()
         
-@bot.command()
+@bot.command()   #works
 async def die(ctx):
     exit()
     
