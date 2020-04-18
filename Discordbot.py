@@ -7,16 +7,34 @@ import random as rd
 import numpy as np
 import os
 import time
+import urllib.parse , urllib.request, re
 #######################Globalvariables########################################
 token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype= str)
 workdir = os.path.dirname(__file__)
 songdir = os.path.join(workdir,'songs')
 playlistdir = os.path.join(workdir, 'playlists')
+songdowndir = os.path.join(workdir,'songs/%(title)s.%(ext)s')
 bot = commands.Bot(command_prefix = '.')
 queue = np.array([])
 length = np.array([])
 urlque = np.array([])
+result = np.array([])
+kello = 0
+ydl_opts = {
+                'format': 'bestaudio/best',
+                'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192', 
+                    }],
+                'outtmpl': songdowndir
+                
+                }
+
+
 ##############################################################################
+#to do
+# queue toistaa itseään
 
 def queclr(y, x): #works
     global queue
@@ -29,20 +47,38 @@ def queclr(y, x): #works
         except:
             pass
     elif y == 1:
-        try:
+        try:  #tuhoutuu joskus 
             filepath = os.path.join(songdir,queue[0] +'.mp3')
             queue = np.delete(queue,0)
             urlque = np.delete(urlque, 0)
             os.unlink(filepath)
         except IndexError:
+            print('sire, thou art gay')
             pass
         
     elif y == 2:
         try:
             urlque = np.delete(urlque, x)
         except IndexError:
+            print('enemy sighted')
             pass
-        
+
+def get_title(url):
+    global ydl_opts
+    global length
+    
+    
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(url, download=False)
+        title = info_dict.get('title', None)
+        lengthval = info_dict.get('duration', None) #turha?
+        if title.count(':') >= 1:
+            title = title.replace(':', ' -')
+        if title.count('|') >= 1:
+            title = title.replace('|', '_')
+        ntitle = np.array([title])
+        return ntitle, lengthval
+
         
         
     
@@ -77,7 +113,6 @@ async def backup(ctx):
         
 @bot.command(pass_context=True, aliases=['p'])
 async def play(ctx, url: str):
-    
     channel = ctx.message.author.voice.channel
     voice = get(bot.voice_clients, guild=ctx.guild)
     
@@ -85,45 +120,53 @@ async def play(ctx, url: str):
         global urlque
         urlque = np.append(urlque,url) 
         
-    def urlfromque():   #works
+    def firsturl():
+        global urlque
+        se = urlque[0]
+        return se 
+        
+    def urlfromque():   #works deletes too early
         global urlque
         queclr(1,1)
         try:
             se = urlque[0]
-            urlque = np.delete(urlque,0)
             print(urlque)
             return se
         except IndexError:
+            print('pandas')
             return None
 
 
         
     def songdload(url): #works , lisää search, mieti saako queen nimet
+        global urlque
+        global kello
+        global ydl_opts
         global queue
         global length
-        global urlque
-        songdowndir = os.path.join(workdir,'songs/%(title)s.%(ext)s')
-        ydl_opts = {
-        'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192', 
-            }],
-        'outtmpl': songdowndir
-        }
-    
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            print('Downloading song\n')
-            ydl.download([url])
-            info_dict = ydl.extract_info(url, download=False)
-            title = info_dict.get('title', None)
-            lengthval = info_dict.get('duration', None) #turha?
-            if title.count(':') >= 1:
-                title = title.replace(':', ' -')
-        ntitle = np.array([title])
-        queue = np.append(queue,ntitle)
-        length = np.append(length,lengthval)
+        try:
+            
+
+            
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                print('Downloading song\n')
+                ydl.download([url])
+                ntitle,lengthval = get_title(url)
+                queue = np.append(queue,ntitle)
+                length = np.append(length,lengthval)
+                kello = 0
+                
+        except:
+            if kello <= 3:
+                print('REEE')
+                kello += 1
+                songdload(url)
+            else:
+                kello = 0
+                return
+            return
+        
+     
         
     def checkque(url): #it just works
         global urlque
@@ -137,10 +180,8 @@ async def play(ctx, url: str):
                 voice.play(discord.FFmpegPCMAudio(songpath), after=lambda e: checkque(urlfromque()))
                 voice.source = discord.PCMVolumeTransformer(voice.source)
                 voice.source.value = 0.07
-            
             else:
-               pass      
-
+                pass
         
     if voice and voice.is_connected():
         await voice.move_to(channel)
@@ -148,12 +189,55 @@ async def play(ctx, url: str):
         voice = await channel.connect()
         await ctx.send(f'Need backup in %s!' %(channel))
     
-    urltoque(url)  
-    checkque(url)
+    if voice.is_playing() == False and urlque.size != 0:
+        checkque(firsturl())
+   
+    else:
+        urltoque(url)  
+        checkque(url)
+    
 
+
+@bot.command(pass_context=True)
+async def search(ctx, *, search):
+#    async def on_message(message):
+#        message = int(message)
+#        tulos = 'https://www.youtube.com/watch?v=' +search_result[message]
+#        return tulos
+    global result
+    
+    
+    query_string = urllib.parse.urlencode({'search_query': search})
+    htm_content = urllib.request.urlopen(
+       'https://www.youtube.com/results?'+query_string )
+    search_result = re.findall('href=\"\\/watch\\?v=(.{11})', htm_content.read().decode())
+    for i in range(1,6):
+        del search_result[i]
+        
+    result = np.array([])
+    for i in range(0,5):
+       link = 'https://www.youtube.com/watch?v=' +search_result[i]
+#       name , lenght  = get_title(link)
+       result = np.append(result, link)
+#       tulos = 'https://www.youtube.com/watch?v=' +search_result[0]
+    for i in range(0,5):
+        await ctx.send(result[i])
 
     
-@bot.command(pass_context=True, aliases=['sk','next']) #works
+    
+@bot.command(pass_context=True, aliases=['c'])
+async def choose(ctx, number):
+    wanted = result[int(number)-1]
+    await play(ctx, wanted)
+ 
+    
+    
+    
+    
+    
+  #  await play(ctx, tulos)
+    
+@bot.command(pass_context=True, aliases=['sk','next']) #works , add messagge
 async def skip(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
     if voice.is_playing():
@@ -177,16 +261,33 @@ async def saveplaylist(ctx,nimi: str):
 @bot.command(pass_context=True, aliases=['pl','loadpl']) #works
 async def loadplaylist(ctx, nimi: str):
     global urlque
-    urlque = np.load(playlistdir +f'/{nimi}.npy')
+#    voice = get(bot.voice_clients, guild=ctx.guild)
+    playlist = np.load(playlistdir +f'/{nimi}.npy')
+    urlque = np.append(urlque, playlist)
     print(urlque)
+#    if voice and voice.is_playing(): # ei veden pitävä
+#        pass
+#    else:
     await play(ctx, urlque[0])
 
+    
+@bot.command(pass_context=True , aliases=['atpl'])
+async def addtoplaylist(ctx,*, nimi:str ,url):
+    playlist = np.load(playlistdir +f'/{nimi}.npy')
+    playlist = np.append(playlist, url)
+    await saveplaylist(ctx, nimi)
+    
+    
+@bot.command(pass_context=True, aliases=['rmfpl']) #ei toimi virhe luvussa ?
+async def removefromplaylist(ctx,*, nimi:str, luku:int):
+    playlist = np.load(playlistdir +f'/{nimi}.npy')
+    playlist = np.delete(playlist, int(luku)-1)
+    await saveplaylist(ctx, nimi)
 
 
 
 @bot.command(pass_context=True, aliases=['pau']) #works
 async def pause(ctx):
-    
     voice = get(bot.voice_clients, guild=ctx.guild)
     if voice and voice.is_playing():
         print('Music paused')
@@ -195,6 +296,14 @@ async def pause(ctx):
     else:
         print('Music not playing')
         await ctx.send('Negative! No music playing, sir!')
+        
+        
+@bot.command()
+async  def sauce(ctx):
+    def roll(x):
+        asdf = round(x * rd.random())
+    sauce = str(roll(3))
+        
 
 @bot.command(pass_context=True, aliases=['r', 'res']) #works
 async def resume(ctx):
@@ -208,7 +317,7 @@ async def resume(ctx):
     else:
         await ctx.send('But sir please!')
         
-@bot.command(pass_context=True, aliases=['s']) #works
+@bot.command(pass_context=True, aliases=['s']) #no work
 async def stop(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
     global urlque
@@ -222,7 +331,9 @@ async def stop(ctx):
         await ctx.send('Halted thine noises, sire!')
         await voice.disconnect()
     else:
+        queclr(0,1)
         await ctx.send('But sir please!')
+        await voice.disconnect()
     return
 
     
@@ -264,11 +375,11 @@ async def KYS(ctx):
         time.sleep(2)
         await voice.disconnect()
         await ctx.send(rd.choice(exitlist))
-        delsong()
+        await delsong()
         exit()
     else:
         await ctx.send(rd.choice(exitlist))
-        delsong()
+        await delsong()
         exit()
         
 @bot.command()   #works
