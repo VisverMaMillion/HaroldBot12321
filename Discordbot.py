@@ -67,21 +67,23 @@ def get_title(url):
     global ydl_opts
     global length
     
-    
+#   if title.size == 0:
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=False)
         title = info_dict.get('title', None)
-        lengthval = info_dict.get('duration', None) #turha?
-        if title.count(':') >= 1:
-            title = title.replace(':', ' -')
-        if title.count('|') >= 1:
-            title = title.replace('|', '_')
-        ntitle = np.array([title])
-        return ntitle, lengthval
+#        lengthval = info_dict.get('duration', None) #turha?
+    if title.count(':') >= 1:
+        title = title.replace(':', ' -')
+    if title.count('|') >= 1:
+        title = title.replace('|', '_')
+    if title.count('/') >= 1:
+        title = title.replace('/', '_')
 
-        
-        
-    
+    return title
+#    else:
+#        ans = title[0]
+ #       return ans
+
  
 
 @bot.event
@@ -150,10 +152,11 @@ async def play(ctx, url: str):
             
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 print('Downloading song\n')
+                ydl.cache.remove()
                 ydl.download([url])
-                ntitle,lengthval = get_title(url)
+                ntitle = get_title(url)
                 queue = np.append(queue,ntitle)
-                length = np.append(length,lengthval)
+#                length = np.append(length,lengthval)
                 kello = 0
                 
         except:
@@ -164,7 +167,7 @@ async def play(ctx, url: str):
             else:
                 kello = 0
                 return
-            return
+        return
         
      
         
@@ -196,7 +199,18 @@ async def play(ctx, url: str):
         urltoque(url)  
         checkque(url)
     
-
+@bot.command()
+async def playdisk(ctx):
+    channel = ctx.message.author.voice.channel
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    
+    voice = await channel.connect()
+    song = 'song'
+    songpath = os.path.join(workdir, f'mysongs/{song}.mp3')
+    voice.play(discord.FFmpegPCMAudio(songpath))
+    voice.source = discord.PCMVolumeTransformer(voice.source)
+    voice.source.value = 0.07
+    
 
 @bot.command(pass_context=True)
 async def search(ctx, *, search):
@@ -205,23 +219,26 @@ async def search(ctx, *, search):
 #        tulos = 'https://www.youtube.com/watch?v=' +search_result[message]
 #        return tulos
     global result
+
     
     
     query_string = urllib.parse.urlencode({'search_query': search})
     htm_content = urllib.request.urlopen(
        'https://www.youtube.com/results?'+query_string )
     search_result = re.findall('href=\"\\/watch\\?v=(.{11})', htm_content.read().decode())
+    naali = htm_content.read().decode()
+    print(naali)
     for i in range(1,6):
         del search_result[i]
         
     result = np.array([])
     for i in range(0,5):
        link = 'https://www.youtube.com/watch?v=' +search_result[i]
-#       name , lenght  = get_title(link)
+       gottitle = get_title(link)
+       embed = discord.Embed(title=gottitle,url=link)
+       await ctx.send(embed=embed)
        result = np.append(result, link)
-#       tulos = 'https://www.youtube.com/watch?v=' +search_result[0]
-    for i in range(0,5):
-        await ctx.send(result[i])
+
 
     
     
@@ -230,7 +247,7 @@ async def choose(ctx, number):
     wanted = result[int(number)-1]
     await play(ctx, wanted)
  
-    
+
     
     
     
@@ -272,17 +289,27 @@ async def loadplaylist(ctx, nimi: str):
 
     
 @bot.command(pass_context=True , aliases=['atpl'])
-async def addtoplaylist(ctx,*, nimi:str ,url):
+async def addtoplaylist(ctx, nimi:str ,url):
     playlist = np.load(playlistdir +f'/{nimi}.npy')
     playlist = np.append(playlist, url)
-    await saveplaylist(ctx, nimi)
+    np.save(playlistdir +f'/{nimi}.npy', playlist)
     
     
 @bot.command(pass_context=True, aliases=['rmfpl']) #ei toimi virhe luvussa ?
-async def removefromplaylist(ctx,*, nimi:str, luku:int):
+async def removefromplaylist(ctx, nimi:str, luku:int):
     playlist = np.load(playlistdir +f'/{nimi}.npy')
-    playlist = np.delete(playlist, int(luku)-1)
-    await saveplaylist(ctx, nimi)
+    if luku > playlist.size:
+        await ctx.send('Sire, thou known\'t')
+    else:
+        playlist = np.delete(playlist, int(luku)-1)
+        np.save(playlistdir +f'/{nimi}.npy', playlist)
+        await ctx.send('Removed') #lisää sanomaan poistetun kappaleen nimi?
+    playlist = np.array([])
+    
+@bot.command(pass_context=True)
+async def test(ctx, nimi:str, luku:int):
+    await ctx.send(nimi)
+    await ctx.send(luku)
 
 
 
@@ -302,8 +329,9 @@ async def pause(ctx):
 async  def sauce(ctx):
     def roll(x):
         asdf = round(x * rd.random())
-    sauce = str(roll(3))
-        
+        return asdf
+    sauce = str(roll(3))+str(roll(10))+str(roll(10))+str(roll(10))+str(roll(10))+str(roll(10))
+    await ctx.send(sauce)
 
 @bot.command(pass_context=True, aliases=['r', 'res']) #works
 async def resume(ctx):
@@ -341,6 +369,14 @@ async def stop(ctx):
 async def delsong():
     queclr(0,1)
     
+@bot.command()
+async  def flip(ctx):
+    throw = rd.randint(0,1)
+    if throw == 0:
+        await ctx.send('Heads!')
+    else:
+        await ctx.send('Tails!')
+
 @bot.command(aliases = ['ping']) #works
 async def lag(ctx):
     await ctx.send(f'{round(bot.latency * 100)} ms ')
