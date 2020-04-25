@@ -226,8 +226,6 @@ async def search(ctx, *, search):
     htm_content = urllib.request.urlopen(
        'https://www.youtube.com/results?'+query_string )
     search_result = re.findall('href=\"\\/watch\\?v=(.{11})', htm_content.read().decode())
-    naali = htm_content.read().decode()
-    print(naali)
     for i in range(1,6):
         del search_result[i]
         
@@ -305,12 +303,6 @@ async def removefromplaylist(ctx, nimi:str, luku:int):
         np.save(playlistdir +f'/{nimi}.npy', playlist)
         await ctx.send('Removed') #lisää sanomaan poistetun kappaleen nimi?
     playlist = np.array([])
-    
-@bot.command(pass_context=True)
-async def test(ctx, nimi:str, luku:int):
-    await ctx.send(nimi)
-    await ctx.send(luku)
-
 
 
 @bot.command(pass_context=True, aliases=['pau']) #works
