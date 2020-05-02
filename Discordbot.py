@@ -131,7 +131,7 @@ async def unload(ctx, extension):
     await ctx.send("Cog unloaded.")
 
 
-for filename in os.listdir('./cogs'):   # Lataa laajennukset automaattisesti
+for filename in os.listdir(workdir +'/cogs'):   # Lataa laajennukset automaattisesti
     if filename.endswith('.py'):
         bot.load_extension(f'cogs.{filename[:-3]}')
 
