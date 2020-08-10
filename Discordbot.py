@@ -18,7 +18,6 @@ workdir = os.path.dirname(__file__)
 songdir = os.path.join(workdir, 'songs')
 playlistdir = os.path.join(workdir, 'playlists')
 songdowndir = os.path.join(workdir, 'songs/%(title)s.%(ext)s')
-bot = commands.Bot(command_prefix='.')
 status = cycle(["Hiding on de_dust2", ".help for help"])
 queue = np.array([])
 length = np.array([])
@@ -36,12 +35,11 @@ ydl_opts = {
 
 }
 
-
+bot = commands.Bot(command_prefix='.')
 ##############################################################################
 # to do
 # queue toistaa itseään
 
-bot.remove_command('help')  # älä koske
 
 
 def queclr(y, x):  # works
@@ -92,15 +90,50 @@ def get_title(url):
 
     return title
 
+def firsturl():
+    se = urlque[0]
+    return se
 
-#    else:
-#        ans = title[0]
-#       return ans
+def urlfromque():  # works deletes too early
+    queclr(1, 1)
+    try:
+        se = urlque[0]
+        return se
+    except IndexError:
+        return None
+
+def songdload(url):  # works , lisää search, mieti saako queen nimet
+    global queue
+    try:     
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            print('Downloading song\n')
+            ydl.cache.remove()
+            ydl.download([url])
+            ntitle = get_title(url)
+            queue = np.append(queue, ntitle)
+            kello = 0
+
+    except:
+        if kello <= 3:
+            print('REEE')
+            kello += 1
+            songdload(url)
+        else:
+            kello = 0
+            return
+    return
+
+
+
 
 
 @bot.event
 async def on_ready():  # works
     change_status.start()
+    bot.remove_command('help')  # älä koske! Koskin >:)
+    for filename in os.listdir(workdir +'\cogs'):   # Lataa laajennukset automaattisesti
+        if filename.endswith('.py'):
+            bot.load_extension(f'cogs.{filename[:-3]}')
     print('Need backup!')
 
 
@@ -123,6 +156,21 @@ async def load(ctx, extension):
     bot.load_extension(f'cogs.{extension}')
     await ctx.send("Cog loaded.")
 
+@bot.command()
+@commands.has_role('Harold Wrangler')
+async def clear(ctx, amount=2):
+    if amount >= 20 :
+        pass
+    else:
+        await ctx.channel.purge(limit=amount)
+        
+@bot.command(aliases = ['mtn'])
+async def movetonext(ctx):
+    last = urlque[:-1]
+    np.insert(urlque, 1, last)
+    np.delete(urlque,len(urlque)-1)
+        
+
 
 @bot.command()
 @commands.has_role('Harold Wrangler')
@@ -130,10 +178,6 @@ async def unload(ctx, extension):
     bot.unload_extension(f'cogs.{extension}')
     await ctx.send("Cog unloaded.")
 
-
-for filename in os.listdir(workdir +'/cogs'):   # Lataa laajennukset automaattisesti
-    if filename.endswith('.py'):
-        bot.load_extension(f'cogs.{filename[:-3]}')
 
 
 @bot.command(pass_context=True)  # works
@@ -160,60 +204,30 @@ async def backup(ctx):
 #        return
 
 @bot.command(pass_context=True, aliases=['p'])
-async def play(ctx, url: str):
+async def play(ctx, * url):
     channel = ctx.message.author.voice.channel
     voice = get(bot.voice_clients, guild=ctx.guild)
-
-    def urltoque(url):  # works
-        global urlque
-        urlque = np.append(urlque, url)
-
-    def firsturl():
-        global urlque
-        se = urlque[0]
-        return se
-
-    def urlfromque():  # works deletes too early
-        global urlque
-        queclr(1, 1)
-        try:
-            se = urlque[0]
-            print(urlque)
-            return se
-        except IndexError:
-            print('pandas')
-            return None
-
-    def songdload(url):  # works , lisää search, mieti saako queen nimet
-        global urlque
-        global kello
-        global ydl_opts
-        global queue
-        global length
-        try:
-
-            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                print('Downloading song\n')
-                ydl.cache.remove()
-                ydl.download([url])
-                ntitle = get_title(url)
-                queue = np.append(queue, ntitle)
-                #                length = np.append(length,lengthval)
-                kello = 0
-
-        except:
-            if kello <= 3:
-                print('REEE')
-                kello += 1
-                songdload(url)
-            else:
-                kello = 0
-                return
-        return
-
-    def checkque(url):  # it just works
-        global urlque
-        global queue
+    global urlque
+#    
+#        def checkque(url):  # it just works
+#        global urlque
+#        global queue
+#        if url == None:
+#            return
+#        else:
+#            if not voice.is_playing():
+#                songdload(url)
+#                if voice.is_connected():
+#                   pass
+#                else:
+#                channel.connect()
+#                songpath = os.path.join(workdir, f'songs/{queue[0]}.mp3')
+#                voice.play(discord.FFmpegPCMAudio(songpath), after=lambda e: checkque(urlfromque()))
+#                voice.source = discord.PCMVolumeTransformer(voice.source)
+#                voice.source.value = 0.05
+#            else:
+#                pass
+    def checkque(url):  # it just works , make test how to make it not disconnect while convert
         if url == None:
             return
         else:
@@ -222,31 +236,59 @@ async def play(ctx, url: str):
                 songpath = os.path.join(workdir, f'songs/{queue[0]}.mp3')
                 voice.play(discord.FFmpegPCMAudio(songpath), after=lambda e: checkque(urlfromque()))
                 voice.source = discord.PCMVolumeTransformer(voice.source)
-                voice.source.value = 0.07
+                voice.source.value = 0.05
             else:
                 pass
+
+
 
     if voice and voice.is_connected():
         await voice.move_to(channel)
     else:
         voice = await channel.connect()
         await ctx.send(f'Need backup in %s!' % channel)
-
-    if not voice.is_playing() and urlque.size != 0:
-        checkque(firsturl())
-
+        
+    url = " ".join(url)
+    if not url.startswith(('https://','www.youtube')):
+        query_string = urllib.parse.urlencode({'search_query': url})
+        htm_content = urllib.request.urlopen('https://www.youtube.com/results?' + query_string)
+        song =re.findall('"\\/watch\\?v=(.{11})"', htm_content.read().decode())[:1]
+        songlink = 'https://www.youtube.com/watch?v=' + song[0]
+        await play(ctx,songlink)
+    
     else:
-        urltoque(url)
-        checkque(url)
+        if not voice.is_playing() and urlque.size != 0:
+            checkque(firsturl())
+        
+        else:
+            urlque = np.append(urlque, url)
+            checkque(url)
+
+@bot.command()
+async def shuffle(ctx):
+    global urlque
+    np.random.shuffle(urlque[1:])
+    
+@bot.command(aliases=['np'])
+async def nowplaying(ctx):
+    global queue
+    global urlque
+    embed = discord.Embed(title=queue[0], url=urlque[0])
+    await ctx.send(embed=embed)
+
+@bot.command(aliases=['que']) #fixdis
+async def showqueue(ctx):
+    global queue
+    await ctx.send(queue[:5])
 
 
 @bot.command()
-async def playdisk(ctx):
+async def playdisk(ctx, name):
     channel = ctx.message.author.voice.channel
     voice = get(bot.voice_clients, guild=ctx.guild)
 
     voice = await channel.connect()
-    song = 'song'
+    song = str(name)
     songpath = os.path.join(workdir, f'mysongs/{song}.mp3')
     voice.play(discord.FFmpegPCMAudio(songpath))
     voice.source = discord.PCMVolumeTransformer(voice.source)
@@ -254,20 +296,14 @@ async def playdisk(ctx):
 
 
 @bot.command(pass_context=True, aliases=['s'])
-async def search(ctx, *, search):
-    #    async def on_message(message):
-    #        message = int(message)
-    #        tulos = 'https://www.youtube.com/watch?v=' +search_result[message]
-    #        return tulos
+async def search(ctx, * search):
     global result
 
     query_string = urllib.parse.urlencode({'search_query': search})
     htm_content = urllib.request.urlopen(
         'https://www.youtube.com/results?' + query_string)
-    search_result = re.findall('href=\"\\/watch\\?v=(.{11})', htm_content.read().decode())
-    for i in range(1, 6):
-        del search_result[i]
-
+    search_result = re.findall('"\\/watch\\?v=(.{11})"',
+                    htm_content.read().decode())[:5]
     result = np.array([])
     for i in range(0, 5):
         link = 'https://www.youtube.com/watch?v=' + search_result[i]
@@ -275,15 +311,12 @@ async def search(ctx, *, search):
         embed = discord.Embed(title=gottitle, url=link)
         await ctx.send(embed=embed)
         result = np.append(result, link)
-
+        
 
 @bot.command(pass_context=True, aliases=['c'])
 async def choose(ctx, number):
     wanted = result[int(number) - 1]
-    await play(ctx, wanted)
-
-
-#  await play(ctx, tulos)
+    await play(ctx,wanted)
 
 @bot.command(pass_context=True, aliases=['sk', 'next'])  # works , add message
 async def skip(ctx):
@@ -297,18 +330,33 @@ async def skip(ctx):
 @bot.command(pass_context=True, aliases=['rmfq'])  # works
 async def removefromque(ctx, x):
     queclr(2, int(x))
-
+    
+    
+@bot.command()
+async def playlists(ctx):
+     for filename in os.listdir(playlistdir):
+         await ctx.send(f'{filename[:-4]}')
+         
+         
+@bot.command()
+async def songs(ctx, plis:str):
+    playlist = np.loadtxt(playlistdir + f'/{plis}.dat', dtype=str, usecols=1)
+    saad = []
+    for s in playlist:
+        saad.append(s.replace('_',' '))
+    await ctx.send(saad)
+   
 
 @bot.command(pass_context=True, aliases=['savepl', 'spl'])  # works
-async def saveplaylist(ctx, nimi: str):
-    np.save(playlistdir + f'/{nimi}.npy', urlque)
+async def saveque(ctx, nimi:str):
+    np.savetxt(playlistdir + f'/{nimi}.dat', urlque, fmt='%s')
 
 
 @bot.command(pass_context=True, aliases=['pl', 'loadpl'])  # works
-async def loadplaylist(ctx, nimi: str):
+async def loadplaylist(ctx, nimi:str):
     global urlque
     #    voice = get(bot.voice_clients, guild=ctx.guild)
-    playlist = np.load(playlistdir + f'/{nimi}.npy')
+    playlist = np.loadtxt(playlistdir + f'/{nimi}.dat', dtype=str, usecols=0)
     urlque = np.append(urlque, playlist)
     print(urlque)
     #    if voice and voice.is_playing(): # ei veden pitävä
@@ -318,20 +366,21 @@ async def loadplaylist(ctx, nimi: str):
 
 
 @bot.command(pass_context=True, aliases=['atpl'])
-async def addtoplaylist(ctx, nimi: str, url):
-    playlist = np.load(playlistdir + f'/{nimi}.npy')
+async def addtoplaylist(ctx, nimi:str, url):
+    playlist = np.loadtxt(playlistdir + f'/{nimi}.dat', dtype=str)
     playlist = np.append(playlist, url)
-    np.save(playlistdir + f'/{nimi}.npy', playlist)
+    print(playlist)
+    #np.savetxt(playlistdir + f'/{nimi}.dat', playlist)
 
 
 @bot.command(pass_context=True, aliases=['rmfpl'])  # ei toimi virhe luvussa ?
 async def removefromplaylist(ctx, nimi: str, luku: int):
-    playlist = np.load(playlistdir + f'/{nimi}.npy')
+    playlist = np.loadtxt(playlistdir + f'/{nimi}.dat')
     if luku > playlist.size:
         await ctx.send('Sire, thou known\'t')
     else:
         playlist = np.delete(playlist, int(luku) - 1)
-        np.save(playlistdir + f'/{nimi}.npy', playlist)
+        np.savetxt(playlistdir + f'/{nimi}.dat', playlist)
         await ctx.send('Removed')  # lisää sanomaan poistetun kappaleen nimi?
     playlist = np.array([])
 
@@ -449,6 +498,10 @@ async def kys(ctx):
         await ctx.send(rd.choice(exitlist))
         await delsong()
         exit()
+        
+@bot.command()
+async def hapi(ctx):
+    await ctx.send('<:widepeepohappy:656504711880638464>')
 
 
 @bot.command()  # works
