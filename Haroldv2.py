@@ -1,11 +1,9 @@
 # #####################Imports#################################################
-import discord
+import discord, os, time
 from discord.ext import commands, tasks
 from discord import utils
 from itertools import cycle
 import numpy as np
-import os
-import time
 import random as rd
 # ######################Globalvariables########################################
 token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype=str)

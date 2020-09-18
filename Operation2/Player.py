@@ -1,13 +1,10 @@
-import discord
+import discord, re, os, youtube_dl
 from discord.ext import commands, tasks
 from discord.utils import get
 import urllib.parse
 import urllib.request
-import re
 import random as rd
 import numpy as np
-import os
-import youtube_dl
 # ##################################################
 workdir = os.path.dirname(__file__)
 songdir = os.path.join(workdir, 'songs')
@@ -18,6 +15,7 @@ length = np.array([])
 urlque = np.array([])
 result = np.array([])
 kello = 0
+bot = commands.Bot(command_prefix='.')
 ydl_opts = {
     'format': 'bestaudio/best',
     'postprocessors': [{
@@ -113,6 +111,28 @@ def songdload(url):  # works , lisää search, mieti saako queen nimet
             kello = 0
             return
     return
+
+
+class Music(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.player={
+            "songfiles":[]
+        }
+
+    @commands.Cog.listener('on_voice_state_update')
+    async def queclear(self,user,after):
+        if after.channel is None and user.id == self.bot.user.id:
+            try:
+                # laita clearaamaan que per server ??
+            except KeyError: # tarkistele tomiiko tämä
+                pass
+
+    async def ytplaylist(self,data,msg): #kemali bag löater
+        for i in data['queue']:
+            self.player[msg.guild.id]['queue'].append({'title':i, 'author':msg})
+
+
 
 #@bot.command(aliases=['KYs', 'KYS', 'Kys', 'KyS', "kYS"])  # works mutta optimoi
 #@commands.has_role('Harold Wrangler')
