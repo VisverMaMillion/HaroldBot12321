@@ -1,4 +1,5 @@
 # #####################Imports#################################################
+import discord
 from discord.ext import commands, tasks
 from discord import utils
 from itertools import cycle
@@ -56,52 +57,17 @@ async def unload(ctx, extension):
     await ctx.send("Cog unloaded.")
 
 
-@bot.command(pass_context=True)  # works
-async def backup(ctx):
-    channel = ctx.message.author.voice.channel
-    voice = get(bot.voice_clients, guild=ctx.guild)
-    if voice and voice.is_connected():
-        await voice.move_to(channel)
-    else:
-        await channel.connect()
-        print('Need backup in %s' % channel)
-        await ctx.send(f'Need backup in %s!' % channel)
-
-
 @bot.command(aliases=['ping'])  # works
 async def lag(ctx):
     await ctx.send(f'{round(bot.latency * 100)} ms ')
 
 
-@bot.command(aliases=['KYs', 'KYS', 'Kys', 'KyS', "kYS"])  # works mutta optimoi
-@commands.has_role('Harold Wrangler')
-async def kys(ctx):
-    voice = get(bot.voice_clients, guild=ctx.guild)
-    try:
-        # ##urlque = np.array([])
-        voice.stop()
-    except AttributeError:
-        pass
-    if voice and voice.is_connected():
-        deathdir = os.path.join(workdir, f'sfx/deathsounds/{rd.choice(deathlist)}.mp3')
-        voice.play(discord.FFmpegPCMAudio(deathdir))
-        voice.source = discord.PCMVolumeTransformer(voice.source)
-        voice.source.value = 0.4
-        time.sleep(2)
-        await voice.disconnect()
-        await ctx.send(rd.choice(exitlist))
-       # await delsong()
-        exit()
-    else:
-        await ctx.send(rd.choice(exitlist))
-        exit()
-
-
 @bot.command()  # works
 @commands.has_role('Harold Wrangler')
-async def die():
+async def die(ctx):
+    for song in os.listdir(songdir):
+        filepath = os.path.join(songdir, song)
+        os.unlink(filepath)
     await bot.close()
-    await exit()
-
 
 bot.run(str(token))
