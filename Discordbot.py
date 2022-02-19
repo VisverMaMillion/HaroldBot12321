@@ -170,7 +170,7 @@ async def clear(ctx, amount=2):
 
 @bot.command(aliases=['mtn'])
 async def movetonext(ctx):
-    last = urlque[:-1]
+    last = urlque[-1]
     np.insert(urlque, 1, last)
     np.delete(urlque, len(urlque) - 1)
 
@@ -271,6 +271,9 @@ async def shuffle(ctx):
     global urlque
     np.random.shuffle(urlque[1:])
 
+@bot.commad()
+async def jonin(ctx):
+    songdload("https://www.youtube.com/watch?v=NkFrnFooMgk")
 
 @bot.command(aliases=['np'])
 async def nowplaying(ctx):
