@@ -32,6 +32,8 @@ class Player:
     def __init__(self):
         pass
 
+
+# ##################### Block for cogs ############################
 #does the looping of status
 @tasks.loop(seconds=10) 
 async def change_status():
@@ -45,6 +47,27 @@ async def on_ready():  # works
         if filename.endswith('.py'):
             bot.load_extension(f'cogs.{filename[:-3]}')
     print('Need backup!')
+
+@bot.command()
+@commands.has_role('Harold Wrangler')  # Tarvitset tämän roolin käyttääksesi tiettyjä komentoja
+async def reload(ctx, extension):
+    bot.unload_extension(f'cogs.{extension}')
+    bot.load_extension(f'cogs.{extension}')
+    await ctx.send("Cog reloaded.")
+
+@bot.command()
+@commands.has_role('Harold Wrangler')
+async def load(ctx, extension):
+    bot.load_extension(f'cogs.{extension}')
+    await ctx.send("Cog loaded.")
+
+@bot.command()
+@commands.has_role('Harold Wrangler')
+async def unload(ctx, extension):
+    bot.unload_extension(f'cogs.{extension}')
+    await ctx.send("Cog unloaded.")
+
+# ###################################################################
 
 
     
