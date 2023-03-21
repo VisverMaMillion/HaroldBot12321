@@ -23,7 +23,7 @@ class BotInstance:
     def __init__(*kwargs):
         pass
 # teen näitä töiksi kohta btw
-
+# inshallah
 
 
 
