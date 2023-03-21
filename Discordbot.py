@@ -14,7 +14,7 @@ import re
 from requests import get as rget
 
 # ######################Globalvariables########################################
-token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype=str)
+#token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype=str)
 workdir = os.path.dirname(__file__)
 songdir = os.path.join(workdir, 'songs')
 playlistdir = os.path.join(workdir, 'playlists')
@@ -25,7 +25,7 @@ length = np.array([])
 urlque = np.array([])
 result = np.array([])
 kello = 0
-ydl_opts = {'format': 'bestaudio', 'noplaylist': 'False'}
+ydl_opts = {'format': 'bestaudio', 'noplaylist': True, 'quiet': True}
 
 #{
 #    'format': 'bestaudio/best',
@@ -40,21 +40,13 @@ ydl_opts = {'format': 'bestaudio', 'noplaylist': 'False'}
 players = {}
 
 
-bot = commands.Bot(command_prefix='.')
+bot = commands.Bot(command_prefix='.',intents=discord.Intents.all())
 
 
 ##############################################################################
 # to do
 # queue toistaa itseään
-def songsearch(arg):
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        try:
-            rget(arg)
-        except:
-            info = ydl.extract_info(f"ytsearch:{arg}", download=False)['entries'][0]
-        else:
-            info = ydl.extract_info(arg, download=False)
-    return info['formats'][0]['url'], info['title']
+
 
 def getplayer(ctx):
     return players[f'{ctx.guild}']
@@ -67,6 +59,7 @@ class Player:
         self.loop = False
         self._playing = False
         self.song = ""
+        self.ydl_opts = {'format': 'bestaudio', 'noplaylist': True, 'quiet': True}
 
     @property
     def playing(self):
@@ -80,18 +73,39 @@ class Player:
     def que(self):
         return self._que
 
+    @property
+    def playlists(self):
+        return self.ydl_opts['noplaylist']
+
+    def songsearch(self, arg):
+        with youtube_dl.YoutubeDL(self.ydl_opts) as ydl:
+            try:
+                rget(arg)
+            except:
+                info = ydl.extract_info(f"ytsearch:{arg}", download=False)['entries'][0]
+            else:
+                info = ydl.extract_info(arg, download=False)
+
+            if 'entries' in info:
+                list = np.asarray([x['webpage_url'] for x in info['entries']])
+                self.l2que(list)
+                self._que = np.delete(self._que, 0)
+                return self.songsearch(self._que[0])
+
+        return info['formats'][0]['url'], info['title']
+
+    def togglepl(self):
+        self.ydl_opts['noplaylist'] = not self.ydl_opts['noplaylist']
+
     def shuffle(self):
         np.random.shuffle(self._que)
 
-    def L2que(self, songs):
-        self._que = np.append(self._que, songs)
-    #make setter for que ?
+    def l2que(self, sangs):
+        self._que = np.append(self._que, sangs)
+    # make setter for que?
 
-
-    def skip(self, ctx):
-        if self.playing:
-            voice = get(bot.voice_clients, guild=ctx.guild)
-            voice.stop()
+    def rfq(self, index):
+        self._que = np.delete(self._que, index)
 
     def add2que(self, url):
         url = " ".join(url)
@@ -117,18 +131,12 @@ class Player:
         voice = get(bot.voice_clients, guild=ctx.guild)
 
         try:
-            source,self.song = songsearch(self._que[0])
+            source,self.song = self.songsearch(self._que[0])
             voice.play(discord.FFmpegPCMAudio(source, **FFMPEG_OPTS), after=lambda e: self._after_song(ctx))
             voice.source = discord.PCMVolumeTransformer(voice.source)
             voice.source.value = 0.05
         except (IndexError, youtube_dl.DownloadError):
             self._after_song(ctx)
-
-
-
-
-
-
 
 
 def queclr(y, x):  # works
@@ -160,7 +168,6 @@ def queclr(y, x):  # works
 
 
 def get_title(url):
-    global ydl_opts
     global length
 
     #   if title.size == 0:
@@ -219,9 +226,10 @@ async def clear(ctx, amount=2):
     else:
         await ctx.channel.purge(limit=amount+1)
 
-
+#ei toimi
 @bot.command(aliases=['mtn'])
 async def movetonext(ctx):
+    player = getplayer(ctx)
     last = urlque[:-1]
     np.insert(urlque, 1, last)
     np.delete(urlque, len(urlque) - 1)
@@ -359,23 +367,30 @@ async def choose(ctx, number):
 #skip doesn't work
 @bot.command(pass_context=True, aliases=['sk', 'next'])  # works , add message
 async def skip(ctx):
-    #voice = get(bot.voice_clients, guild=ctx.guild)
-    #if voice.is_playing():
-    #    voice.stop()
-    #else:
-    #    pass
-    player = players[f'{ctx.guild}']
-    #remove ctx and take it from player object?
-    player.skip(ctx)
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    if voice.is_connected() and voice.is_playing():
+        voice.stop()
+        await ctx.send("Starting next song, sire")
+    else:
+        await ctx.send("Nothing to skip")
+
 
 
 @bot.command(pass_context=True, aliases=['rmfq'])  # doesn't works
 async def removefromque(ctx, x):
-    pass
+    if x < 1:
+        await ctx.send("What the hell?")
+    try:
+        player = getplayer(ctx)
+    except KeyError:
+        await ctx.send("I'm holding here, sire!")
+    r = player.rfq(x)
+    await ctx.send(f'Removed from que')
+
 
 
 @bot.command()
-async def playlists(ctx):
+async def savedplaylists(ctx):
     for filename in os.listdir(playlistdir):
         await ctx.send(f'{filename[:-4]}')
 
@@ -400,11 +415,10 @@ async def loadplaylist(ctx, nimi: str):
     await backup(ctx)
     player = getplayer(ctx)
     playlist = np.loadtxt(playlistdir + f'/{nimi}.dat', dtype=str, usecols=0)
-    player.L2que(playlist)
+    player.l2que(playlist)
     if not player.playing:
         player.playing = True
         player.play(ctx)
-
 
 
 @bot.command(pass_context=True, aliases=['atpl'])
@@ -431,11 +445,9 @@ async def removefromplaylist(ctx, nimi: str, luku: int):
 async def pause(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
     if voice and voice.is_playing():
-        print('Music paused')
         voice.pause()
-        await ctx.send('Music paused, sir!')
+        await ctx.send('Halted thine noises, sire!')
     else:
-        print('Music not playing')
         await ctx.send('Negative! No music playing, sir!')
 
 
@@ -445,8 +457,8 @@ async def sauce(ctx):
         asdf = round(x * rd.random())
         return asdf
 
-    sauce = str(roll(3)) + str(roll(10)) + str(roll(10)) + str(roll(10)) + str(roll(10)) + str(roll(10))
-    await ctx.send(sauce)
+    dum = str(roll(3)) + str(roll(10)) + str(roll(10)) + str(roll(10)) + str(roll(10)) + str(roll(10))
+    await ctx.send(dum)
 
 
 @bot.command(aliases=['ping'])  # works
@@ -459,7 +471,6 @@ async def resume(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
 
     if voice and voice.is_paused():
-        print('Music resumed')
         voice.resume()
         await ctx.send('Resumed your music, sir!')
     else:
@@ -469,21 +480,14 @@ async def resume(ctx):
 @bot.command(pass_context=True)  # no work
 async def stop(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
-    global urlque
 
     if voice and voice.is_playing():
-        print('Music stopped')
-        urlque = np.array([])
-        voice.stop()
-        time.sleep(2)
-        player = getplayer(ctx)
-        del players[player]
+        del players[f'{ctx.guild}']
         await ctx.send('Halted thine noises, sire!')
         await voice.disconnect()
     else:
         await ctx.send('But sir please!')
         await voice.disconnect()
-
 
 
 exitlist = ["AAAARGH!", "Said no and left.", "Harold fell off the map.", "Harold fucking died.",
@@ -492,17 +496,17 @@ exitlist = ["AAAARGH!", "Said no and left.", "Harold fell off the map.", "Harold
 deathlist = ["death1", "death2", "death3", "headshot", "olkapaa", "aisaatana"]
 
 
+# Disconnects bot from server
 @bot.command(aliases=['KYs', 'KYS', 'Kys', 'KyS', "kYS"])  # works mutta optimoi
 @commands.has_role('Harold Wrangler')
 async def kys(ctx):
     voice = get(bot.voice_clients, guild=ctx.guild)
-    global urlque
-    try:
-        urlque = np.array([])
+    players.pop(f"{ctx.guild}")
+    # stop playing music for death sound
+    if voice.is_playing():
         voice.stop()
-    except AttributeError:
-        pass
-    if voice and voice.is_connected():
+    # if on voice channel plays sound before diconnecting
+    if voice.is_connected():
         deathdir = os.path.join(workdir, f'sfx/deathsounds/{rd.choice(deathlist)}.mp3')
         voice.play(discord.FFmpegPCMAudio(deathdir))
         voice.source = discord.PCMVolumeTransformer(voice.source)
@@ -510,19 +514,24 @@ async def kys(ctx):
         time.sleep(2)
         await voice.disconnect()
         await ctx.send(rd.choice(exitlist))
-        await ctx.bot.logout()
-        #exit()
+
     else:
-        await ctx.send(rd.choice(exitlist))
-        await ctx.bot.logout()
-        #exit()
+        await ctx.send('But sir please!')
+    # removes player object from list
 
-@bot.command()
-async def playlist(ctx):
-    ydl_opts['noplaylist'] = not ydl_opts['noplaylist']
-    await ctx.send(f'Allowing playlists: {not ydl_opts["noplaylist"]} ')
+
+
+# Toggles playlist, on default they are off
+@bot.command(aliases=['tpl'])
+async def playlists(ctx):
+    try:
+        player = getplayer(ctx)
+    except KeyError:
+        await ctx.send("I'm not even there xd")
+        return
+    player.togglepl()
+    await ctx.send(f'Allowing playlists: {player.playlists} ')
     
-
 
 @bot.command()
 async def hapi(ctx):
@@ -533,13 +542,15 @@ async def hapi(ctx):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def goodbot(ctx):
-    await ctx.send(file=discord.File(workdir +'/sfx/pat.jpg'))
+    await ctx.send(file=discord.File(workdir + '/sfx/pat.jpg'))
 
 
 @bot.command()  # works
 @commands.has_role('Harold Wrangler')
 async def die(ctx):
+    for x in bot.voice_clients:
+        await x.disconnect()
+    #await ctx.bot.logout()
     exit()
 
-
-bot.run(str(token))
+bot.run("Njk5MjE0ODgzMDQzOTM0Mjcw.XpRImg.MPpnwvWRpiKM9ALgvOQ4AO5M7p0")
