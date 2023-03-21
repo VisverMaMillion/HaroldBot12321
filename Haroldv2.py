@@ -21,7 +21,7 @@ instances = {}
 
 
 # teen näitä töiksi kohta btw
-
+# inshallah
 
 
 
