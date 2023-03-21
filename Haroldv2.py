@@ -20,7 +20,7 @@ bot = commands.Bot(command_prefix='.', intents=discord.Intents.all())
 instances = {}
 
 
-
+# teen näitä töiksi kohta btw
 
 
 
