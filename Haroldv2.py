@@ -20,8 +20,8 @@ bot = commands.Bot(command_prefix='.', intents=discord.Intents.all())
 instances = {}
 
 class BotInstance:
-    def __init__(*kwargs):
-        pass
+    def __init__(self, *kwargs):
+        self.attribute = kwargs
 # teen näitä töiksi kohta btw
 # inshallah
 
