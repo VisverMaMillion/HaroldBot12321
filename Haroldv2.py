@@ -19,7 +19,9 @@ bot = commands.Bot(command_prefix='.', intents=discord.Intents.all())
 # Dictionary to hold bot instances with server id as key
 instances = {}
 
-
+class BotInstance:
+    def __init__(*kwargs):
+        pass
 
 
 
