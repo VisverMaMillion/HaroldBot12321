@@ -14,7 +14,7 @@ import re
 from requests import get as rget
 
 # ######################Globalvariables########################################
-#token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype=str)
+token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype=str)
 workdir = os.path.dirname(__file__)
 songdir = os.path.join(workdir, 'songs')
 playlistdir = os.path.join(workdir, 'playlists')
@@ -553,4 +553,5 @@ async def die(ctx):
     #await ctx.bot.logout()
     exit()
 
-bot.run("Njk5MjE0ODgzMDQzOTM0Mjcw.XpRImg.MPpnwvWRpiKM9ALgvOQ4AO5M7p0")
+#Token
+bot.run(token)
