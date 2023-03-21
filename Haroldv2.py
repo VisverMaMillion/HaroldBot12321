@@ -21,8 +21,26 @@ bot = commands.Bot(command_prefix='.', intents=discord.Intents.all())
 # Dictionary to hold bot instances with server id as key
 instances = {}
 
-#Bot instance 
-class BotInstance:
+#Main class
+#maybe all cogs go inside  this
+#also cogs have changed in discord py rewrite
+#now requires async
+class MainClient(commands.Bot):
+    def __init__(self) -> None:
+        #make help_command=??
+        super().__init__(command_prefix='.', help_command=help_command, intents=discord.Intents.all())
+
+        self.tree = discord.app_commands.CommandTree(self)
+
+    async def setup_hook(self) -> None:
+        await self.tree.sync()
+
+
+
+
+
+#Discord Server instance 
+class ServerInstance:
     def __init__(self, *kwargs):
         self.attribute = kwargs
         self.ydl_opts = {'format': 'bestaudio', 'noplaylist': True, 'quiet': True}
@@ -70,9 +88,19 @@ async def unload(ctx, extension):
 # ###################################################################
 
 
-    
+class UtilityCommands:
+    def __init__(self, bot) -> None:
+        self.bot = bot
 
     
+#kill switch
+@bot.command() 
+@commands.has_role('Harold Wrangler')
+async def die(ctx):
+    #try to make the shutdown graceful
+    for x in bot.voice_clients:
+        await x.disconnect()
+    #await ctx.bot.logout()
+    exit() # this aint it
 
-
-#bot.run(str(token))
+bot.run(str(token))
