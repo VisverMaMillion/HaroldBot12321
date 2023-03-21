@@ -22,8 +22,6 @@ instances = {}
 class BotInstance:
     def __init__(self, *kwargs):
         self.attribute = kwargs
-# teen näitä töiksi kohta btw
-
 
 
 bot.run(str(token))
