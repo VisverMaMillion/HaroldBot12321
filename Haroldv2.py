@@ -24,11 +24,12 @@ class BotInstance:
     def __init__(self, *kwargs):
         self.attribute = kwargs
         self.ydl_opts = {'format': 'bestaudio', 'noplaylist': True, 'quiet': True}
+        self.data = kwargs[-1]
 
 class Player:
     def __init__(self):
         pass
-        
+
 
     
 
