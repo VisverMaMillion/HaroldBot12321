@@ -1,10 +1,12 @@
 # #####################Imports#################################################
-import discord, os, time
+import discord, os, time, youtube_dl, re
 from discord.ext import commands, tasks
-from discord import utils
+from discord.utils import get
 from itertools import cycle
 import numpy as np
-import random as rd
+# numpy.random 
+import urllib.parse ,urllib.request
+from requests import get as rget
 # ######################Globalvariables########################################
 token = np.loadtxt('C:/bottoken/haroldtoken.txt', dtype=str)
 workdir = os.path.dirname(__file__)
@@ -29,6 +31,20 @@ class BotInstance:
 class Player:
     def __init__(self):
         pass
+
+#does the looping of status
+@tasks.loop(seconds=10) 
+async def change_status():
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game(next(status)))
+
+@bot.event
+async def on_ready():  # works
+    change_status.start()
+    bot.remove_command('help')  # älä koske! Koskin >:)
+    for filename in os.listdir(os.path.join(workdir, 'cogs')):  # Lataa laajennukset automaattisesti
+        if filename.endswith('.py'):
+            bot.load_extension(f'cogs.{filename[:-3]}')
+    print('Need backup!')
 
 
     
