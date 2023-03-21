@@ -19,9 +19,20 @@ bot = commands.Bot(command_prefix='.', intents=discord.Intents.all())
 # Dictionary to hold bot instances with server id as key
 instances = {}
 
+#Bot instance 
 class BotInstance:
     def __init__(self, *kwargs):
         self.attribute = kwargs
+        self.ydl_opts = {'format': 'bestaudio', 'noplaylist': True, 'quiet': True}
+
+class Player:
+    def __init__(self):
+        pass
+        
+
+    
+
+    
 
 
-bot.run(str(token))
+#bot.run(str(token))
