@@ -161,4 +161,6 @@ async def die(ctx):
     #await ctx.bot.logout()
     exit() # this aint it
 
-bot.run(str(token))
+#bot.run(str(token))
+client = MainClient()
+client.run(str(token))
