@@ -25,7 +25,7 @@ async def helphuman(self, ctx):
     embed.add_field(name="Description", value="Human race is one of the most versatile and flexible options available to players. Humans possess no inherent racial traits beyond their ability score increases, but they make up for it with their adaptability and potential for customization.", inline=True)
     await ctx.send(embed=embed)
 
-#classes
+#classes (each class is a fucking massive block of text, might be easier to just research online per class *crying*)
 
 #Fighter class (next ones will be cleaner and leaner, if continued)
 async def helpfighter(self, ctx):
