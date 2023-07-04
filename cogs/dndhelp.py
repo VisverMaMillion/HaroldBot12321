@@ -7,12 +7,12 @@
 #HELP COMMANDS .dnd_help <category> <name> ?
 
 #QUICK TEMPLATE#
-async def help(self, ctx):
-    embed=discord.Embed(title="", description="")
-    embed.add_field(name="", value="", inline=False)
-    embed.add_field(name="", value="", inline=True)
-    embed.add_field(name="", value="", inline=True)
-    await ctx.send(embed=embed)
+#async def help(self, ctx):
+#    embed=discord.Embed(title="", description="")
+#   embed.add_field(name="", value="", inline=False)
+#    embed.add_field(name="", value="", inline=True)
+#    embed.add_field(name="", value="", inline=True)
+#    await ctx.send(embed=embed)
     
 #rules
 
@@ -27,6 +27,7 @@ async def helphuman(self, ctx):
 
 #classes
 
+#Fighter class (next ones will be cleaner and leaner, if continued)
 async def helpfighter(self, ctx):
     embed=discord.Embed(title="Fighter", description="Class")
     embed.add_field(name="Feature: Proficiencies", value="Fighters are proficient in all armor types, shields, and a wide array of weapons, granting them versatility in their equipment choices. They also gain proficiency in Strength and Constitution saving throws.", inline=False)
@@ -63,6 +64,7 @@ async def helpfighter(self, ctx):
 
 #features and traits (such as 'Nightvision' or 'Arcane recovery')
 
+#Fighter archetype: Champion
 async def helparchetypechampion(self, ctx):
     embed=discord.Embed(title="Champion", description="Fighter archetype")
     embed.add_field(name="Feature: Improved Critical", value="At 3rd level, The Champion's critical hit range expands from a natural 20 to include a roll of 19 or 20.", inline=False)
