@@ -170,6 +170,17 @@ class DND(commands.Cog):
 #int((abilitys -10)/2) +lisäys
 
 
+#HELP COMMANDS
+    
+    #rules
+
+    #races
+    
+    #classes
+
+    #features and traits (such as 'Nightvision' or 'Arcane recovery')
+    
+    #spells
     async def helpmagicmissile(self, ctx):
         embed=discord.Embed(title="Magic Missile", description="Evocation Spell")
         embed.add_field(name="Casting Time", value="1 action", inline=False)
