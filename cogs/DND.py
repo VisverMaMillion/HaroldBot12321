@@ -1,5 +1,6 @@
 from discord.ext import commands, tasks
 from discord import app_commands
+import discord
 import numpy.random
 
 skilltable = {"acrobatics":0, "animal":1, "arcana":2, "athletics":3, "deception":4 , "history":5, "insight":6, "intimidation":7, "investigation":8, "medicine":9, "nature":10, "perception":11, "performance":12 , "persuasion":13, "religion":14, "thief":15, "stealth":16, "survival":17}
