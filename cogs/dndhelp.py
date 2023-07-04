@@ -1,4 +1,4 @@
-
+import discord
 
 
 
@@ -20,7 +20,7 @@
 
 #races
 
-async def helphuman(self, ctx):
+async def helphuman(ctx):
     embed=discord.Embed(title="Human", description="Race")
     embed.add_field(name="Feature", value="+1 to every abilityscore", inline=False)
     embed.add_field(name="Feature", value="You speak the common language and can choose one additional language", inline=True)
@@ -30,7 +30,7 @@ async def helphuman(self, ctx):
 #classes (each class is a fucking massive block of text, might be easier to just research online per class *crying*. But, this stuff will go into the level up - helper if we make it, so it's not entirely meaningless in any case)
 
 #Fighter class (next ones will be cleaner and leaner, if continued)
-async def helpfighter(self, ctx):
+def helpfighter(ctx):
     embed=discord.Embed(title="Fighter", description="Class")
     embed.add_field(name="Feature: Proficiencies", value="Fighters are proficient in all armor types, shields, and a wide array of weapons, granting them versatility in their equipment choices. They also gain proficiency in Strength and Constitution saving throws.", inline=False)
     embed.add_field(name="Feature: Fighting Style", value="At 1st level, Fighters choose a Fighting Style, which enhances their combat abilities.", inline=True)
@@ -62,12 +62,12 @@ async def helpfighter(self, ctx):
     embed.add_field(name="Feature: Action Surge 2", value="At 17th level, Fighters' Action Surge ability improves as well. They can now use Action Surge twice between long rests, granting them two additional actions on top of their regular action and possible bonus actions.", inline=True)
     embed.add_field(name="Feature: Superior Critical", value="At 18th level, Fighters gain the Superior Critical feature. When they score a critical hit with a weapon attack, they can roll an additional weapon damage die.", inline=True)
     embed.add_field(name="Feature: Survivor", value="At 20th level, Fighters gain the Survivor feature. Whenever they are reduced to 0 hit points but not killed outright, they can make a Constitution saving throw with a DC of 5 + the damage taken. On a success, they instead drop to 1 hit point.", inline=True)
-    await ctx.send(embed=embed)
-
+    #await ctx.send(embed=embed)
+    return embed
 #features and traits (such as 'Nightvision' or 'Arcane recovery')
 
 #Fighter archetype: Champion
-async def helparchetypechampion(self, ctx):
+async def helparchetypechampion(ctx):
     embed=discord.Embed(title="Champion", description="Fighter archetype")
     embed.add_field(name="Feature: Improved Critical", value="At 3rd level, The Champion's critical hit range expands from a natural 20 to include a roll of 19 or 20.", inline=False)
     embed.add_field(name="Feature: Remarkable Athlete", value="Starting at 7th level, add half of your proficiency bonus to st, dex and con check. Minumum str, dex or con saving throw is 14. Champion's can add half their proficiency bonus (rounded down) to any Strength, Dexterity, or Constitution check they make that doesn't already use their proficiency bonus.", inline=True)
@@ -76,7 +76,7 @@ async def helparchetypechampion(self, ctx):
     await ctx.send(embed=embed)
     
 #spells
-async def helpmagicmissile(self, ctx):
+async def helpmagicmissile(ctx):
     embed=discord.Embed(title="Magic Missile", description="Evocation Spell")
     embed.add_field(name="Casting Time", value="1 action", inline=False)
     embed.add_field(name="Range", value="120 feet", inline=True)
