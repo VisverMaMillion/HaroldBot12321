@@ -13,6 +13,8 @@
 #    embed.add_field(name="", value="", inline=True)
 #    embed.add_field(name="", value="", inline=True)
 #    await ctx.send(embed=embed)
+
+#CURRENTLY ONLY ADDING SPELLS (VERY SLOWLY), UNTILL MORE CONCRETE GUIDELINES
     
 #rules
 
