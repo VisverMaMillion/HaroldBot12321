@@ -17,6 +17,7 @@ deathlist = ["death1", "death2", "death3", "headshot", "olkapaa", "aisaatana"]
 status = cycle(["Hiding on de_dust2", ".help for help","何？"])
 
 bot = commands.Bot(command_prefix='.', intents=discord.Intents.all())
+
 # #############################################################################
 
 #Main class
@@ -28,19 +29,27 @@ bot = commands.Bot(command_prefix='.', intents=discord.Intents.all())
 class MainClient(commands.Bot):
     def __init__(self) -> None:
         #make help_command=??
-        super().__init__(command_prefix='.', help_command=help_command, intents=discord.Intents.all())
+        # help_command=help_command, to below
+        super().__init__(command_prefix='.',  intents=discord.Intents.all())
 
         #self.tree = discord.app_commands.CommandTree(self)
         # Dictionary to hold bot instances with server id as key
         self.instances = {}
 
     async def setup_hook(self) -> None:
-        for filename in os.listdir(os.path.join(workdir, 'cogs')):  # Lataa laajennukset automaattisesti
-            if filename.endswith('.py'):
-                self.load_extension(f'cogs.{filename[:-3]}')
-        await self.tree.sync()
+        #for filename in os.listdir(os.path.join(workdir, 'cogs')):  # Lataa laajennukset automaattisesti
+         #   if filename.endswith('.py'):
+                #await self.load_extension(f'cogs.{filename[:-3]}')
+        await self.load_extension("cogs.DND")
 
+    @commands.command()
+    async def create_instance(self, ctx):
+        pass
+        #self.instances.update({f'{ctx.guild}': Player(ctx)})
+        
 
+    async def play(self, ctx, *url):
+        pass
 
 
 
@@ -188,42 +197,55 @@ class Player:
             self._aftersong()
             return 1
         return 0
-    
 
 
 # ##################### Block for cogs ############################
 #does the looping of status
+intents = discord.Intents.default()
+#bot.run(str(token))
+client = MainClient()
+
 @tasks.loop(seconds=10) 
 async def change_status():
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game(next(status)))
+    await client.change_presence(status=discord.Status.online, activity=discord.Game(next(status)))
 
-@bot.event
-async def on_ready():  # works
-    change_status.start()
-    bot.remove_command('help')  # älä koske! Koskin >:)
-    for filename in os.listdir(os.path.join(workdir, 'cogs')):  # Lataa laajennukset automaattisesti
-        if filename.endswith('.py'):
-            bot.load_extension(f'cogs.{filename[:-3]}')
-    print('Need backup!')
+#@client.event
+#async def on_ready():  # works
+#    change_status.start()
+#    bot.remove_command('help')  # älä koske! Koskin >:)
+#    for filename in os.listdir(os.path.join(workdir, 'cogs')):  # Lataa laajennukset automaattisesti
+#        if filename.endswith('.py'):
+#            bot.load_extension(f'cogs.{filename[:-3]}')
+#    print('Need backup!')
 
-@bot.command()
+
+@client.command()
 @commands.has_role('Harold Wrangler')  # Tarvitset tämän roolin käyttääksesi tiettyjä komentoja
 async def reload(ctx, extension):
     bot.unload_extension(f'cogs.{extension}')
     bot.load_extension(f'cogs.{extension}')
     await ctx.send("Cog reloaded.")
 
-@bot.command()
+@client.command()
 @commands.has_role('Harold Wrangler')
 async def load(ctx, extension):
     bot.load_extension(f'cogs.{extension}')
     await ctx.send("Cog loaded.")
 
-@bot.command()
+@client.command()
 @commands.has_role('Harold Wrangler')
 async def unload(ctx, extension):
     bot.unload_extension(f'cogs.{extension}')
     await ctx.send("Cog unloaded.")
+
+@client.hybrid_command(description="Kill the bot")
+async def die(ctx):
+    exit()
+
+@client.command()
+async def synch(ctx):
+    await client.tree.sync(guild=discord.Object(id=602544427528880147))
+
 
 # ###################################################################
 
@@ -234,17 +256,15 @@ class UtilityCommands:
 
     
 #kill switch
-@bot.command() 
-@commands.has_role('Harold Wrangler')
-async def die(ctx):
+#@bot.command() 
+#@commands.has_role('Harold Wrangler')
+#async def die(ctx):
     #try to make the shutdown graceful
-    for x in bot.voice_clients:
-        await x.disconnect()
+#    for x in bot.voice_clients:
+#        await x.disconnect()
     #await ctx.bot.logout()
-    exit() # this aint it
+#    exit() # this aint it
 
 
-intents = discord.Intents.default()
-#bot.run(str(token))
-client = MainClient()
+
 client.run(str(token))
