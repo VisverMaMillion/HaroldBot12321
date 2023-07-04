@@ -1,10 +1,12 @@
-
+import discord
 
 
 
 
 
 #HELP COMMANDS .dnd_help <category> <name> ?
+
+#REQUEST: Make the bot respond in private messages to the user requesting the information
 
 #QUICK TEMPLATE#
 #async def help(self, ctx):
