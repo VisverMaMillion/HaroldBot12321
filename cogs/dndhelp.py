@@ -32,7 +32,7 @@ async def helpfighter(self, ctx):
     embed=discord.Embed(title="Fighter", description="Class")
     embed.add_field(name="Feature: Proficiencies", value="Fighters are proficient in all armor types, shields, and a wide array of weapons, granting them versatility in their equipment choices. They also gain proficiency in Strength and Constitution saving throws.", inline=False)
     embed.add_field(name="Feature: Fighting Style", value="At 1st level, Fighters choose a Fighting Style, which enhances their combat abilities.", inline=True)
-    #onko mahdollista jotenkin laittaa nää stylet ton Fighting Style-fieldin alle järkevästi, eikä sillee että nää on oma fieldinsä?
+    #onko mahdollista jotenkin laittaa nää stylet ton Fighting Style-fieldin alle järkevästi, eikä sillee että nää on oma fieldinsä? Vaihtoehtona voin tehdä näille samalla tavalla, kun alempana tein arkkityypeille
     embed.add_field(name="Archery", value="You gain a +2 bonus to attack rolls you make with ranged weapons.", inline=True)
     embed.add_field(name="Defense", value="You gain a +1 bonus to AC (Armor Class) when wearing armor.", inline=True)
     embed.add_field(name="Dueling", value="When wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.", inline=True)
