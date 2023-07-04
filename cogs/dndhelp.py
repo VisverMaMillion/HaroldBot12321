@@ -25,7 +25,7 @@ async def helphuman(self, ctx):
     embed.add_field(name="Description", value="Human race is one of the most versatile and flexible options available to players. Humans possess no inherent racial traits beyond their ability score increases, but they make up for it with their adaptability and potential for customization.", inline=True)
     await ctx.send(embed=embed)
 
-#classes (each class is a fucking massive block of text, might be easier to just research online per class *crying*)
+#classes (each class is a fucking massive block of text, might be easier to just research online per class *crying*. But, this stuff will go into the level up - helper if we make it, so it's not entirely meaningless in any case)
 
 #Fighter class (next ones will be cleaner and leaner, if continued)
 async def helpfighter(self, ctx):
@@ -51,7 +51,7 @@ async def helpfighter(self, ctx):
     embed.add_field(name="Cavalier", value="Specializes in mounted combat and protection.", inline=True)
     embed.add_field(name="Arcane Archer", value="Employs magical arrows and imbues their shots with arcane effects.", inline=True)
     #ei enää tyyppejä
-    embed.add_field(name="Feature: Ability Score Improvement", value="At certain levels, Fighters gain the Ability Score Improvement feature, allowing them to increase their ability scores or take feats to further enhance their capabilities.", inline=True)
+    embed.add_field(name="Feature: Ability Score Improvement", value="At levels 4, 6, 8, 12, 14, 16 and 19, Fighters gain the Ability Score Improvement feature, allowing them to add +2 to an ability or +1 to two abilities", inline=True)
     embed.add_field(name="Feature: Extra Attacks", value="Starting at 5th level, Fighters can attack twice instead of once when they take the Attack action on their turn. This feature improves as they reach higher levels, allowing them to attack more times in a single turn.", inline=True)
     embed.add_field(name="Feature: Indomitable", value="At 9th level, Fighters gain the ability to reroll a saving throw that they fail. They can use this feature once per long rest.", inline=True)
     embed.add_field(name="Feature: Extra Attack 2", value="At 11th level, Fighters gain an extra attack when they take the Attack action, bringing their total number of attacks to three.", inline=True)
@@ -69,7 +69,8 @@ async def helparchetypechampion(self, ctx):
     embed=discord.Embed(title="Champion", description="Fighter archetype")
     embed.add_field(name="Feature: Improved Critical", value="At 3rd level, The Champion's critical hit range expands from a natural 20 to include a roll of 19 or 20.", inline=False)
     embed.add_field(name="Feature: Remarkable Athlete", value="Starting at 7th level, add half of your proficiency bonus to st, dex and con check. Minumum str, dex or con saving throw is 14. Champion's can add half their proficiency bonus (rounded down) to any Strength, Dexterity, or Constitution check they make that doesn't already use their proficiency bonus.", inline=True)
-    embed.add_field(name="Feature: ", value="", inline=True)
+    embed.add_field(name="Feature: Superior Critical", value="At 15th level, the Champion's critical hit range expands further to include a roll of 18, 19, or 20.", inline=True)
+    embed.add_field(name="Feature: Survivor", value="Starting at 18th level, the Champion becomes an exceptional survivor on the battlefield. If they drop to 0 hit points but don't die outright, they can make a DC 5 Constitution saving throw to instead drop to 1 hit point. This saving throw can be repeated each time the Champion is reduced to 0 hit points but hasn't died outright, as long as they aren't incapacitated.", inline=True)
     await ctx.send(embed=embed)
     
 #spells
